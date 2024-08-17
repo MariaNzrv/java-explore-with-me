@@ -24,7 +24,7 @@ public class EndpointHistory {
     private String ip;
 
     @NonNull
-    private LocalDateTime request_timestamp;
+    private LocalDateTime requestTimestamp;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "app_id")
