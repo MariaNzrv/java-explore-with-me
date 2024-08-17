@@ -2,15 +2,12 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
 import ru.practicum.HitRequest;
-import ru.practicum.exception.EntityNotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.StatisticMapper;
 import ru.practicum.model.App;
@@ -20,7 +17,10 @@ import ru.practicum.storage.AppRepository;
 import ru.practicum.storage.EndpointHistoryRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -75,7 +75,7 @@ public class StatsService {
 
         }
 
-        if (!unique && uris != null && !uris.isEmpty()){
+        if (!unique && uris != null && !uris.isEmpty()) {
             params.put("start", start);
             params.put("end", end);
             params.put("uri", uris);
@@ -101,7 +101,7 @@ public class StatsService {
             endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
         }
 
-        if (unique && uris != null && !uris.isEmpty()){
+        if (unique && uris != null && !uris.isEmpty()) {
             params.put("start", start);
             params.put("end", end);
             params.put("uri", uris);

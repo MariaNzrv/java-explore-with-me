@@ -5,11 +5,9 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.HitRequest;
 import ru.practicum.StatsResponse;
 import ru.practicum.mapper.StatisticMapper;
-import ru.practicum.model.EndpointHistory;
 import ru.practicum.service.StatsService;
 
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -24,12 +22,12 @@ public class StatsController {
     public void create(@RequestBody HitRequest hitRequest) {
         statsService.createEndpointHistory(hitRequest);
     }
-    // todo review - постарайся переделать start & end в LocalDateTime. Желательно использовать типизированные объекты вместо нетипизированных
+
     @GetMapping("/stats")
     public List<StatsResponse> getStats(@RequestParam("start") String start,
-                                  @RequestParam("end") String end,
-                                  @RequestParam(name = "uris", required = false) List<String> uris,
-                                   @RequestParam(defaultValue = "false", required = false, name = "unique") Boolean unique) {
+                                        @RequestParam("end") String end,
+                                        @RequestParam(name = "uris", required = false) List<String> uris,
+                                        @RequestParam(defaultValue = "false", required = false, name = "unique") Boolean unique) {
 
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
