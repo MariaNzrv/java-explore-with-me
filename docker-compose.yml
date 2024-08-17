@@ -17,9 +17,17 @@ services:
 #      - "5432:5432"
 
 
-#  ewm-service:
-#    ports:
-#      - "8080:8080"
-#
-#  ewm-db:
-#    image: postgres:16.1
+  ewm-service:
+    ports:
+      - "8080:8080"
+    build:
+      dockerfile: main-service/Dockerfile
+    depends_on:
+      - ewm-db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/postgres
+
+  ewm-db:
+    image: postgres:16.1
+    environment:
+      POSTGRES_PASSWORD: password

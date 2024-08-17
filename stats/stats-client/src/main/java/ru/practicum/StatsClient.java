@@ -19,7 +19,6 @@ import java.util.List;
 
 @Slf4j
 @Service
-
 public class StatsClient {
     private final RestTemplate restTemplate;
     private final String serverUrl;
@@ -39,11 +38,6 @@ public class StatsClient {
             map.put("uris", uris);
             map.put("unique", unique);
             ResponseEntity<StatsResponse[]> response = restTemplate.getForEntity(serverUrl + "/stats", StatsResponse[].class, map);
-//        ResponseEntity<StatsResponse> response = restTemplate
-//                .exchange(serverUrl + "/stats?start=" + URLEncoder.encode(start, StandardCharsets.UTF_8) +
-//                        "&end=" + URLEncoder.encode(end, StandardCharsets.UTF_8) +
-//                        "&uris=" + Arrays.toString(uris) +
-//                        "&unique=" + unique, HttpMethod.GET, null, StatsResponse.class);
 
             if (!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
                 log.error("Код ответа: {}", response.getStatusCode());
@@ -70,8 +64,5 @@ public class StatsClient {
             log.error("Во время выполнения запроса POST по URL-адресу: {} , возникла ошибка.", serverUrl + "/hit");
             throw new IllegalArgumentException("Во время выполнения запроса POST по URL-адресу: '" + serverUrl + "/hit" + "', возникла ошибка.\n");
         }
-
-        //HttpEntity<HitRequest> request = new HttpEntity<>(hitRequest);
-        //ResponseEntity<Void> response = restTemplate.exchange(serverUrl, HttpMethod.POST, request, Void.class);
     }
 }
