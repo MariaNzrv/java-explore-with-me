@@ -11,10 +11,13 @@
 # Create a stage for resolving and downloading dependencies.
 FROM eclipse-temurin:17-jdk-jammy as deps
 
+RUN apt update
+RUN apt install maven -y
+
 WORKDIR /build/java-explore-with-me
 
-COPY --chmod=0755 mvnw mvnw
-COPY .mvn/ .mvn/
+#COPY --chmod=0755 mvnw mvnw
+#COPY .mvn/ .mvn/
 # java-explore-with-me.pom
 COPY pom.xml pom.xml
 
@@ -26,7 +29,7 @@ COPY stats/stats-server/pom.xml stats/stats-server/pom.xml
 COPY stats/stats-dto/pom.xml stats/stats-dto/pom.xml
 COPY stats/stats-client/pom.xml stats/stats-client/pom.xml
 
-RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -DskipTests || true
+RUN --mount=type=cache,target=/root/.m2 mvn dependency:go-offline -DskipTests || true
 
 ################################################################################
 
@@ -43,8 +46,7 @@ WORKDIR /build/java-explore-with-me
 COPY stats/stats-client/src stats/stats-client/src/
 COPY stats/stats-dto/src stats/stats-dto/src/
 COPY main-service/src main-service/src/
-RUN --mount=type=cache,target=/root/.m2 \
-    ./mvnw package -pl :main-service -am -DskipTests
+RUN --mount=type=cache,target=/root/.m2 mvn package -pl :main-service -am -DskipTests
 
 ################################################################################
 
