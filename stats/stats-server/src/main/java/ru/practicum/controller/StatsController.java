@@ -1,16 +1,14 @@
 package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.stats.dto.HitRequestDto;
-import ru.practicum.stats.dto.StatsResponseDto;
 import ru.practicum.mapper.StatisticMapper;
 import ru.practicum.service.StatsService;
+import ru.practicum.stats.dto.HitRequestDto;
+import ru.practicum.stats.dto.StatsResponseDto;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -24,18 +22,12 @@ public class StatsController {
     }
 
     @GetMapping("/stats")
-    public List<StatsResponseDto> getStats(@RequestParam("start") String start,
-                                           @RequestParam("end") String end,
+    public List<StatsResponseDto> getStats(@RequestParam("start") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
+                                           @RequestParam("end") @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end,
                                            @RequestParam(name = "uris", required = false) List<String> uris,
                                            @RequestParam(defaultValue = "false", required = false, name = "unique") Boolean unique) {
 
-        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        LocalDateTime startDateTime = LocalDateTime.parse(URLDecoder.decode(start, StandardCharsets.UTF_8), formatter);
-        LocalDateTime endDateTime = LocalDateTime.parse(URLDecoder.decode(end, StandardCharsets.UTF_8), formatter);
-
-        return StatisticMapper.toDto(statsService.getStatistic(startDateTime, endDateTime, uris, unique));
+        return StatisticMapper.toDto(statsService.getStatistic(start, end, uris, unique));
     }
-
 
 }
