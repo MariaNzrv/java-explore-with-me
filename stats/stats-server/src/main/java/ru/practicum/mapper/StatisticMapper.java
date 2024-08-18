@@ -1,7 +1,7 @@
 package ru.practicum.mapper;
 
-import ru.practicum.HitRequest;
-import ru.practicum.StatsResponse;
+import ru.practicum.stats.dto.HitRequestDto;
+import ru.practicum.stats.dto.StatsResponseDto;
 import ru.practicum.model.EndpointHistory;
 import ru.practicum.model.Statistic;
 
@@ -11,29 +11,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class StatisticMapper {
-    public static EndpointHistory toEndpointHistory(HitRequest hitRequest) {
+    public static EndpointHistory toEndpointHistory(HitRequestDto hitRequestDto) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return new EndpointHistory(
-                hitRequest.getUri(),
-                hitRequest.getIp(),
-                LocalDateTime.parse(hitRequest.getTimestamp(), formatter));
+                hitRequestDto.getUri(),
+                hitRequestDto.getIp(),
+                LocalDateTime.parse(hitRequestDto.getTimestamp(), formatter));
     }
 
-    public static StatsResponse toDto(Statistic statistic) {
-        StatsResponse statsResponse = new StatsResponse();
-        statsResponse.setUri(statistic.getUri());
-        statsResponse.setHits(statistic.getHits());
+    public static StatsResponseDto toDto(Statistic statistic) {
+        StatsResponseDto statsResponseDto = new StatsResponseDto();
+        statsResponseDto.setUri(statistic.getUri());
+        statsResponseDto.setHits(statistic.getHits());
         if (statistic.getApp() != null) {
-            statsResponse.setApp(statistic.getApp().getName());
+            statsResponseDto.setApp(statistic.getApp().getName());
         }
-        return statsResponse;
+        return statsResponseDto;
     }
 
-    public static List<StatsResponse> toDto(List<Statistic> statisticList) {
-        List<StatsResponse> statsResponseList = new ArrayList<>();
+    public static List<StatsResponseDto> toDto(List<Statistic> statisticList) {
+        List<StatsResponseDto> statsResponseDtoList = new ArrayList<>();
         for (Statistic statistic : statisticList) {
-            statsResponseList.add(toDto(statistic));
+            statsResponseDtoList.add(toDto(statistic));
         }
-        return statsResponseList;
+        return statsResponseDtoList;
     }
 }

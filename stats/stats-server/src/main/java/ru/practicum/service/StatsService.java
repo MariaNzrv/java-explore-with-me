@@ -2,23 +2,18 @@ package ru.practicum.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Service;
-import ru.practicum.HitRequest;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.StatisticMapper;
 import ru.practicum.model.App;
 import ru.practicum.model.EndpointHistory;
 import ru.practicum.model.Statistic;
+import ru.practicum.stats.dto.HitRequestDto;
 import ru.practicum.storage.AppRepository;
 import ru.practicum.storage.EndpointHistoryRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,13 +24,12 @@ public class StatsService {
 
     private final AppRepository appRepository;
     private final EndpointHistoryRepository endpointHistoryRepository;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
-    public void createEndpointHistory(HitRequest hitRequest) {
-        validatePostFields(hitRequest);
+    public void createEndpointHistory(HitRequestDto hitRequestDto) {
+        validatePostFields(hitRequestDto);
 
-        App app = getAppByName(hitRequest.getApp());
-        EndpointHistory endpointHistory = StatisticMapper.toEndpointHistory(hitRequest);
+        App app = getAppByName(hitRequestDto.getApp());
+        EndpointHistory endpointHistory = StatisticMapper.toEndpointHistory(hitRequestDto);
         endpointHistory.setApp(app);
 
         endpointHistoryRepository.save(endpointHistory);
@@ -46,86 +40,33 @@ public class StatsService {
         return app.orElseGet(() -> appRepository.save(new App(name)));
     }
 
-    private void validatePostFields(HitRequest hitRequest) {
-        if (hitRequest.getApp() == null || hitRequest.getIp() == null || hitRequest.getUri() == null ||
-                hitRequest.getTimestamp() == null) {
+    private void validatePostFields(HitRequestDto hitRequestDto) {
+        if (hitRequestDto.getApp() == null || hitRequestDto.getIp() == null || hitRequestDto.getUri() == null || hitRequestDto.getTimestamp() == null) {
             log.warn("Не заполнены обязательные поля");
             throw new ValidationException("Не заполнены обязательные поля");
         }
     }
 
     public List<Statistic> getStatistic(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+
         validateGetFields(start, end);
 
         List<Statistic> endpointHist = new ArrayList<>();
-        String sql;
-        SqlRowSet endpointHistRows = null;
-        HashMap<String, Object> params = new HashMap<>();
 
         if (!unique && (uris == null || uris.isEmpty())) {
-            params.put("start", start);
-            params.put("end", end);
-            SqlParameterSource parameters = new MapSqlParameterSource(params);
-            sql = "select distinct app_id, uri, count(id) as hits " +
-                    "from endpoint_hist " +
-                    "where request_timestamp between date(:start) and date(:end) " +
-                    "group by app_id, uri " +
-                    "order by hits desc";
-            endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
-
+            endpointHist = endpointHistoryRepository.getStatisticBetweenDates(start, end);
         }
 
         if (!unique && uris != null && !uris.isEmpty()) {
-            params.put("start", start);
-            params.put("end", end);
-            params.put("uri", uris);
-            SqlParameterSource parameters = new MapSqlParameterSource(params);
-            sql = "select distinct app_id, uri, count(id) as hits " +
-                    "from endpoint_hist " +
-                    "where request_timestamp between date(:start) and date(:end) and uri in (:uri) " +
-                    "group by app_id, uri " +
-                    "order by hits desc";
-            endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
+            endpointHist = endpointHistoryRepository.getStatisticBetweenDatesAndUriIn(start, end, uris);
         }
 
         if (unique && (uris == null || uris.isEmpty())) {
-            params.put("start", start);
-            params.put("end", end);
-            SqlParameterSource parameters = new MapSqlParameterSource(params);
-            sql = "select app_id, uri, count(uri) as hits from ( " +
-                    "select distinct app_id, uri, ip " +
-                    "from endpoint_hist " +
-                    "where request_timestamp between date(:start) and date(:end)) " +
-                    "group by app_id, uri " +
-                    "order by hits desc";
-            endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
+            endpointHist = endpointHistoryRepository.getStatisticBetweenDatesGroupByIp(start, end);
         }
 
         if (unique && uris != null && !uris.isEmpty()) {
-            params.put("start", start);
-            params.put("end", end);
-            params.put("uri", uris);
-            SqlParameterSource parameters = new MapSqlParameterSource(params);
-            sql = "select app_id, uri, count(uri) as hits from ( " +
-                    "select distinct app_id, uri, ip " +
-                    "from endpoint_hist " +
-                    "where request_timestamp between date(:start) and date(:end) and uri in (:uri)) " +
-                    "group by app_id, uri " +
-                    "order by hits desc";
-            endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
-        }
-
-        if (endpointHistRows.first()) {
-            Optional<App> app = appRepository.findById(endpointHistRows.getInt("app_id"));
-            if (app.isPresent()) {
-                endpointHist.add(new Statistic(app.get(), endpointHistRows.getString("uri"), endpointHistRows.getInt("hits")));
-            }
-            while (endpointHistRows.next()) {
-                app = appRepository.findById(endpointHistRows.getInt("app_id"));
-                if (app.isPresent()) {
-                    endpointHist.add(new Statistic(app.get(), endpointHistRows.getString("uri"), endpointHistRows.getInt("hits")));
-                }
-            }
+            endpointHist = endpointHistoryRepository.getStatisticBetweenDatesAndUriInGroupByIp(start, end, uris);
         }
 
         return endpointHist;

@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.stats.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class StatsResponse {
+public class HitRequestDto {
     private String app;
     private String uri;
-    private Integer hits;
+    private String ip;
+    private String timestamp;
 }

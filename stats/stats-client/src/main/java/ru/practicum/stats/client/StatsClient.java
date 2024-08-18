@@ -1,4 +1,4 @@
-package ru.practicum;
+package ru.practicum.stats.client;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
+import ru.practicum.stats.dto.HitRequestDto;
+import ru.practicum.stats.dto.StatsResponseDto;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -30,14 +32,14 @@ public class StatsClient {
         this.serverUrl = serverUrl;
     }
 
-    public List<StatsResponse> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
+    public List<StatsResponseDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         try {
             HashMap<String, Object> map = new HashMap<>();
             map.put("start", URLEncoder.encode(start.toString(), StandardCharsets.UTF_8));
             map.put("end", URLEncoder.encode(end.toString(), StandardCharsets.UTF_8));
             map.put("uris", uris);
             map.put("unique", unique);
-            ResponseEntity<StatsResponse[]> response = restTemplate.getForEntity(serverUrl + "/stats", StatsResponse[].class, map);
+            ResponseEntity<StatsResponseDto[]> response = restTemplate.getForEntity(serverUrl + "/stats", StatsResponseDto[].class, map);
 
             if (!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
                 log.error("Код ответа: {}", response.getStatusCode());
@@ -53,9 +55,9 @@ public class StatsClient {
         }
     }
 
-    public void postHit(HitRequest hitRequest) {
+    public void postHit(HitRequestDto hitRequestDto) {
         try {
-            ResponseEntity<Void> response = restTemplate.postForEntity(serverUrl + "/hit", hitRequest, Void.class);
+            ResponseEntity<Void> response = restTemplate.postForEntity(serverUrl + "/hit", hitRequestDto, Void.class);
             if (!response.getStatusCode().equals(HttpStatusCode.valueOf(201))) {
                 log.error("Код ответа: {}", response.getStatusCode());
                 throw new IllegalStateException("Код ошибки: " + response.getStatusCode());

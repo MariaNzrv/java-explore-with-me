@@ -2,8 +2,8 @@ package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.HitRequest;
-import ru.practicum.StatsResponse;
+import ru.practicum.stats.dto.HitRequestDto;
+import ru.practicum.stats.dto.StatsResponseDto;
 import ru.practicum.mapper.StatisticMapper;
 import ru.practicum.service.StatsService;
 
@@ -19,15 +19,15 @@ public class StatsController {
     private final StatsService statsService;
 
     @PostMapping("/hit")
-    public void create(@RequestBody HitRequest hitRequest) {
-        statsService.createEndpointHistory(hitRequest);
+    public void create(@RequestBody HitRequestDto hitRequestDto) {
+        statsService.createEndpointHistory(hitRequestDto);
     }
 
     @GetMapping("/stats")
-    public List<StatsResponse> getStats(@RequestParam("start") String start,
-                                        @RequestParam("end") String end,
-                                        @RequestParam(name = "uris", required = false) List<String> uris,
-                                        @RequestParam(defaultValue = "false", required = false, name = "unique") Boolean unique) {
+    public List<StatsResponseDto> getStats(@RequestParam("start") String start,
+                                           @RequestParam("end") String end,
+                                           @RequestParam(name = "uris", required = false) List<String> uris,
+                                           @RequestParam(defaultValue = "false", required = false, name = "unique") Boolean unique) {
 
         final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 

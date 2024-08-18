@@ -5,6 +5,7 @@ import ru.practicum.model.EndpointHistory;
 
 import java.util.List;
 
-public interface EndpointHistoryRepository extends JpaRepository<EndpointHistory, Integer> {
+public interface EndpointHistoryRepository extends JpaRepository<EndpointHistory, Integer>, CustomEndpointHistoryRepository {
+
     List<EndpointHistory> findAllByAppId(Integer appId);
 }
