@@ -61,6 +61,7 @@ public class Event {
     @Column(name = "published_on")
     private LocalDateTime publishedOn;
 
-    private  EventState state;
+    @Enumerated(EnumType.STRING)
+    private EventState state;
 
 }

@@ -30,6 +30,9 @@ public class RequestService {
     public List<Request> getEventConfirmedRequests(Integer eventId) {
         return requestRepository.findAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
     }
+    public List<Request> getPendingRequestsToChange(Set<Integer> ids) {
+        return requestRepository.findAllByStatusAndIdIn(RequestStatus.PENDING, ids);
+    }
 
     public Integer getCountOfEventConfirmedRequests(Integer eventId) {
         return getEventConfirmedRequests(eventId).size();
@@ -115,6 +118,14 @@ public class RequestService {
             log.error("Запроса с Id = {} не существует", requestId);
             throw new EntityNotFoundException("Запроса с Id = " + requestId + " не существует");
         });
+    }
+
+    public List<Request> findAllRequestsOfEvent(Integer eventId) {
+        return requestRepository.findAllByEventId(eventId);
+    }
+
+    public List<Request> save(List<Request> requests) {
+        return requestRepository.saveAll(requests);
     }
 
 

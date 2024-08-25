@@ -9,6 +9,7 @@ import ru.practicum.event.dto.UpdateEventUserDto;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
 import ru.practicum.location.model.Location;
+import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 
@@ -55,6 +56,28 @@ public class EventMapper {
         eventShortDto.setTitle(event.getTitle());
         eventShortDto.setViews(views);
         return eventShortDto;
+    }
+
+    public static EventShortDto toShortFromFullEvent(EventFullDto eventFullDto) {
+        EventShortDto eventShortDto = new EventShortDto();
+        eventShortDto.setAnnotation(eventFullDto.getAnnotation());
+        eventShortDto.setCategory(eventFullDto.getCategory());
+        eventShortDto.setConfirmedRequests(eventFullDto.getConfirmedRequests());
+        eventShortDto.setEventDate(eventFullDto.getEventDate());
+        eventShortDto.setId(eventFullDto.getId());
+        eventShortDto.setInitiator(eventFullDto.getInitiator());
+        eventShortDto.setPaid(eventFullDto.getPaid());
+        eventShortDto.setTitle(eventFullDto.getTitle());
+        eventShortDto.setViews(eventFullDto.getViews());
+        return eventShortDto;
+    }
+
+    public static List<EventShortDto> toShortFromFullEvent(List<EventFullDto> eventFullDtos) {
+        List<EventShortDto> eventShortDtos = new ArrayList<>();
+        for (EventFullDto eventFullDto : eventFullDtos) {
+            eventShortDtos.add(toShortFromFullEvent(eventFullDto));
+        }
+        return eventShortDtos;
     }
 
 

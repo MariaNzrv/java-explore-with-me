@@ -22,18 +22,21 @@ public class CustomRequestRepositoryImpl implements CustomRequestRepository{
     @Override
     public HashMap<Integer, Integer> getCountOfEventsRequestsMap(Set<Integer> eventsId) {
 
+        HashMap<Integer, Integer> requestsMap = new HashMap<>();
+        if (eventsId.isEmpty()) {
+            return requestsMap;
+        }
         HashMap<String, Object> params = new HashMap<>();
-        params.put("statusConfirmed", RequestStatus.CONFIRMED);
+        params.put("statusConfirmed", RequestStatus.CONFIRMED.name());
         params.put("eventsId", eventsId);
 
         SqlParameterSource parameters = new MapSqlParameterSource(params);
         String sql = "select event_id, count(id) as hits " +
                 "from requests " +
-                "group by event_id " +
-                "having event_id in (:eventsId) and status = (:statusConfirmed)";
+                "where event_id in (:eventsId) and status = :statusConfirmed " +
+                "group by event_id ";
         SqlRowSet sqlRowSet = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
 
-        HashMap<Integer, Integer> requestsMap = new HashMap<>();
 
         if (sqlRowSet.first()) {
             do {
@@ -54,7 +57,7 @@ public class CustomRequestRepositoryImpl implements CustomRequestRepository{
         String sql = "select r.* " +
                 "from requests r, event e " +
                 "where r.requester_id = (:userId) and r.event_id = e.id and e.initiator_id <> (:userId) ";
-        return namedParameterJdbcTemplate.query(sql, params,
+        return namedParameterJdbcTemplate.query(sql, parameters,
                 (rs, rowNum) -> new RequestDto(rs.getTimestamp("created").toLocalDateTime(),
                         rs.getInt("event_id"),
                         rs.getInt("id"),

@@ -95,7 +95,7 @@ public class UserService {
             throw new ValidationException("Электронная почта указана неверно");
         }
 
-        if ((email.substring(email.indexOf('@'), email.indexOf('.')).length() - 1) > 63) {
+        if ((email.substring(email.indexOf('@'), email.lastIndexOf('.')).length() - 1) > 63) {
             log.warn("Домен электронной почты указан неверно email: {} ; domain: {}", email, email.substring(email.indexOf('@'), email.indexOf('.')));
             throw new ValidationException("Домен электронной почты указан неверно");
         }

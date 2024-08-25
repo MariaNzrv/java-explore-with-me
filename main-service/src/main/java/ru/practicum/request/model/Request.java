@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @RequiredArgsConstructor
-@NoArgsConstructor
+//@NoArgsConstructor
 @AllArgsConstructor
 
 @Entity
@@ -19,6 +19,7 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Enumerated(EnumType.STRING)
     private RequestStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)

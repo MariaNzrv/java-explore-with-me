@@ -18,24 +18,24 @@ import ru.practicum.compilation.service.CompilationService;
 @RequiredArgsConstructor
 @RequestMapping(path = "/admin/compilations")
 public class AdminCompilationController {
-    private final CompilationService compilationService;
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public CompilationDto create(@RequestBody NewCompilationDto newCompilationDto) {
-        Compilation savedCompilation = compilationService.create(newCompilationDto);
-        return CompilationMapper.toDto(savedCompilation);
-    }
-
-    @DeleteMapping("/{compId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Integer compId) {
-        compilationService.delete(compId);
-    }
-
-    @PatchMapping("/{compId}")
-    @ResponseStatus(HttpStatus.OK)
-    public CompilationDto update(@PathVariable Integer compId, @RequestBody UpdateCompilationDto updateCompilationDto) {
-        return CompilationMapper.toDto(compilationService.update(compId, updateCompilationDto));
-    }
+//    private final CompilationService compilationService;
+//
+//    @PostMapping
+//    @ResponseStatus(HttpStatus.CREATED)
+//    public CompilationDto create(@RequestBody NewCompilationDto newCompilationDto) {
+//        Compilation savedCompilation = compilationService.create(newCompilationDto);
+//        return CompilationMapper.toDto(savedCompilation);
+//    }
+//
+//    @DeleteMapping("/{compId}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    public void delete(@PathVariable Integer compId) {
+//        compilationService.delete(compId);
+//    }
+//
+//    @PatchMapping("/{compId}")
+//    @ResponseStatus(HttpStatus.OK)
+//    public CompilationDto update(@PathVariable Integer compId, @RequestBody UpdateCompilationDto updateCompilationDto) {
+//        return CompilationMapper.toDto(compilationService.update(compId, updateCompilationDto));
+//    }
 }

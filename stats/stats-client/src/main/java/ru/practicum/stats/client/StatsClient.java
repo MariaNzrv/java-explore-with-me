@@ -11,9 +11,8 @@ import org.springframework.web.client.RestTemplate;
 import ru.practicum.stats.dto.HitRequestDto;
 import ru.practicum.stats.dto.StatsResponseDto;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -35,11 +34,11 @@ public class StatsClient {
     public List<StatsResponseDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         try {
             HashMap<String, Object> map = new HashMap<>();
-            map.put("start", URLEncoder.encode(start.toString(), StandardCharsets.UTF_8));
-            map.put("end", URLEncoder.encode(end.toString(), StandardCharsets.UTF_8));
+            map.put("start", start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            map.put("end", end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             map.put("uris", uris);
             map.put("unique", unique);
-            ResponseEntity<StatsResponseDto[]> response = restTemplate.getForEntity(serverUrl + "/stats", StatsResponseDto[].class, map);
+            ResponseEntity<StatsResponseDto[]> response = restTemplate.getForEntity(serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}", StatsResponseDto[].class, map);
 
             if (!response.getStatusCode().equals(HttpStatusCode.valueOf(200))) {
                 log.error("Код ответа: {}", response.getStatusCode());
@@ -51,7 +50,7 @@ public class StatsClient {
             return Arrays.asList(response.getBody());
         } catch (RestClientException e) {
             log.error("Во время выполнения запроса GET по URL-адресу: {} , возникла ошибка.", serverUrl + "/stats");
-            throw new IllegalArgumentException("Во время выполнения запроса GET по URL-адресу: '" + serverUrl + "/stats" + "', возникла ошибка.\n");
+            throw new IllegalArgumentException("Во время выполнения запроса GET по URL-адресу: '" + serverUrl + "/stats" + "', возникла ошибка.\n", e);
         }
     }
 
@@ -64,7 +63,7 @@ public class StatsClient {
             }
         } catch (RestClientException e) {
             log.error("Во время выполнения запроса POST по URL-адресу: {} , возникла ошибка.", serverUrl + "/hit");
-            throw new IllegalArgumentException("Во время выполнения запроса POST по URL-адресу: '" + serverUrl + "/hit" + "', возникла ошибка.\n");
+            throw new IllegalArgumentException("Во время выполнения запроса POST по URL-адресу: '" + serverUrl + "/hit" + "', возникла ошибка.\n", e);
         }
     }
 }
