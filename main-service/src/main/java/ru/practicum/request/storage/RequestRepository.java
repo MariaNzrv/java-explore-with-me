@@ -9,4 +9,5 @@ import java.util.List;
 
 public interface RequestRepository extends JpaRepository<Request, Integer>, CustomRequestRepository {
     List<Request> findAllByEventIdAndStatus(Integer eventId, RequestStatus requestStatus);
+    Request findByRequesterIdAndEventId(Integer userId, Integer eventId);
 }

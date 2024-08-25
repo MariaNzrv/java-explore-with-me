@@ -1,8 +1,5 @@
 package ru.practicum.event.mapper;
 
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.dto.EventFullDto;
@@ -11,10 +8,7 @@ import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventUserDto;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
-import ru.practicum.event.service.EventService;
 import ru.practicum.location.model.Location;
-import ru.practicum.user.dto.NewUserDto;
-import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 

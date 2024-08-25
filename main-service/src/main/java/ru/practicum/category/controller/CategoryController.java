@@ -5,11 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.category.dto.CategoryDto;
 import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.service.CategoryService;
-import ru.practicum.user.dto.UserDto;
-import ru.practicum.user.mapper.UserMapper;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor

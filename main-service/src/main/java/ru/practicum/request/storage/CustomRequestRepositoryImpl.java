@@ -6,7 +6,10 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
+import ru.practicum.request.dto.RequestDto;
+import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
+import ru.practicum.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -39,5 +42,24 @@ public class CustomRequestRepositoryImpl implements CustomRequestRepository{
         }
 
         return requestsMap;
+    }
+
+    @Override
+    public List<RequestDto> findAllRequestsOfUser(Integer userId) {
+
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("userId", userId);
+
+        SqlParameterSource parameters = new MapSqlParameterSource(params);
+        String sql = "select r.* " +
+                "from requests r, event e " +
+                "where r.requester_id = (:userId) and r.event_id = e.id and e.initiator_id <> (:userId) ";
+        return namedParameterJdbcTemplate.query(sql, params,
+                (rs, rowNum) -> new RequestDto(rs.getTimestamp("created").toLocalDateTime(),
+                        rs.getInt("event_id"),
+                        rs.getInt("id"),
+                        rs.getInt("requester_id"),
+                        RequestStatus.valueOf(rs.getString("status")))
+        );
     }
 }

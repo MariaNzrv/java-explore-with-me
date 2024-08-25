@@ -19,9 +19,6 @@ public class Request {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @NonNull
-    private String annotation;
-
     private RequestStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY)

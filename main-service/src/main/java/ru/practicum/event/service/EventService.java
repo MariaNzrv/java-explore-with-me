@@ -1,6 +1,5 @@
 package ru.practicum.event.service;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -12,16 +11,13 @@ import ru.practicum.category.service.CategoryService;
 import ru.practicum.error.exception.ConflictValidationException;
 import ru.practicum.error.exception.EntityNotFoundException;
 import ru.practicum.error.exception.ValidationException;
-import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventUserDto;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
 import ru.practicum.event.model.StateActionUser;
-import ru.practicum.location.dto.LocationDto;
 import ru.practicum.location.service.LocationService;
-import ru.practicum.request.model.Request;
 import ru.practicum.request.service.RequestService;
 import ru.practicum.stats.client.StatsClient;
 import ru.practicum.stats.dto.StatsResponseDto;
@@ -34,7 +30,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -81,10 +76,14 @@ public class EventService {
     public Event updateEventByUser(Integer userId, Integer eventId, UpdateEventUserDto updateEventUserDto) {
         Event event = findEventById(eventId);
         EventState state = event.getState();
+        User user = userService.findUserById(userId);
+        if(!event.getInitiator().equals(user)) {
+            log.warn("Событие недоступно для редактирования");
+            throw new EntityNotFoundException("Событие недоступно для редактирования");
+        }
 
         validateEventStateForUpdate(state);
 
-        User user = userService.findUserById(userId);
         validateUpdateEventDto(updateEventUserDto);
 
         if (updateEventUserDto.getAnnotation() != null) {
@@ -180,7 +179,7 @@ public class EventService {
     }
 
     public HashMap<Integer, Integer> getConfirmedRequestsList(List<Event> events) {
-       return requestService.getListOfCountRequests(events);
+       return requestService.getListOfCountConfirmedRequests(events);
     }
 
     private void validateNewEventDto(NewEventDto newEventDto) {
