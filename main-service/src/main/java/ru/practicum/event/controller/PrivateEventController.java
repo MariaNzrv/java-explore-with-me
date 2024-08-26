@@ -21,7 +21,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = "/users/{userId}/events", consumes = "application/json")
+@RequestMapping(path = "/users/{userId}/events", consumes = {"*/*"})
 public class PrivateEventController {
     private final EventService eventService;
 

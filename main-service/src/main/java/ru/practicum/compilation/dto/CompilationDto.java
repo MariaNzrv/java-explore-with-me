@@ -12,7 +12,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CompilationDto {
-    private Set<EventShortDto> events;
+    private List<EventShortDto> events;
     private Integer id;
     private Boolean pinned;
     private String title;

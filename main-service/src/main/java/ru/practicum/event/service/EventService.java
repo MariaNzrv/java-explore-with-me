@@ -26,6 +26,7 @@ import ru.practicum.request.model.RequestStatus;
 import ru.practicum.request.service.RequestService;
 import ru.practicum.request.storage.RequestRepository;
 import ru.practicum.stats.client.StatsClient;
+import ru.practicum.stats.dto.HitRequestDto;
 import ru.practicum.stats.dto.StatsResponseDto;
 import ru.practicum.user.model.User;
 import ru.practicum.event.storage.EventRepository;
@@ -67,6 +68,10 @@ public class EventService {
         Pageable page = getPageable(from, size);
 
         return eventRepository.findAllByInitiatorId(userId, page);
+    }
+
+    public List<Event> findAllByListEventsIds(List<Integer> eventIds) {
+        return eventRepository.findAllById(eventIds);
     }
 
     public Event findUserEventById(Integer eventId, Integer userId) {
@@ -290,11 +295,10 @@ public class EventService {
                                                       SortParams sort,
                                                       Integer from,
                                                       Integer size) {
-        //  добавить код "запрос сохранить в сервисе статистики"
         validate(from, size);
         if (text == null && categories == null && paid == null && rangeStart == null && rangeEnd == null && onlyAvailable == null && sort == null) {
             Pageable page = getPageable(from, size);
-            List<Event> events = eventRepository.findAllByState(EventState.PUBLISHED, page;
+            List<Event> events = eventRepository.findAllByState(EventState.PUBLISHED, page);
 
             HashMap<Integer, Integer> viewsMap = getViewsList(events);
             HashMap<Integer, Integer> requestsMap = getConfirmedRequestsList(events);
@@ -315,24 +319,29 @@ public class EventService {
             }
         }
 
-        if (sort.equals(SortParams.EVENT_DATE)) {
-            resultFull.sort(new Comparator<EventFullDto>() {
-                @Override
-                public int compare(EventFullDto e1, EventFullDto e2) {
-                    return e1.getEventDate().compareTo(e2.getEventDate());
-                }
-            });
+        if (sort != null) {
+            if (sort.equals(SortParams.EVENT_DATE)) {
+                resultFull.sort(new Comparator<EventFullDto>() {
+                    @Override
+                    public int compare(EventFullDto e1, EventFullDto e2) {
+                        return e1.getEventDate().compareTo(e2.getEventDate());
+                    }
+                });
+            }
+
+            if (sort.equals(SortParams.VIEWS)) {
+                resultFull.sort(new Comparator<EventFullDto>() {
+                    @Override
+                    public int compare(EventFullDto e1, EventFullDto e2) {
+                        return Integer.compare(e1.getViews(), e2.getViews());
+                    }
+                });
+            }
         }
 
-        if (sort.equals(SortParams.VIEWS)) {
-            resultFull.sort(new Comparator<EventFullDto>() {
-                @Override
-                public int compare(EventFullDto e1, EventFullDto e2) {
-                    return Integer.compare(e1.getViews(), e2.getViews());
-                }
-            });
+        if (resultFull.isEmpty()) {
+            return new ArrayList<>();
         }
-
         return EventMapper.toShortFromFullEvent(resultFull.subList(from, from + size - 1));
     }
 
@@ -403,6 +412,15 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    public Event findPublishedEventById(Integer id) {
+        Event event = findEventById(id);
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            log.error("Событие с Id = {} не существует", id);
+            throw new EntityNotFoundException("Событие с Id = " + id + " не существует");
+        }
+        return event;
+    }
+
     private void validateNewEventDto(NewEventDto newEventDto) {
         
         if (newEventDto.getAnnotation() == null ||
@@ -422,12 +440,21 @@ public class EventService {
         validateTitleFormat(newEventDto.getTitle());
 
         validateEventDateFormat(newEventDto.getEventDate());
+
+        validateParticipantLimitFormat(newEventDto.getParticipantLimit());
     }
 
     private void validateEventDateFormat(LocalDateTime eventDate) {
         if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             log.warn("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
-            throw new ConflictValidationException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
+            throw new ValidationException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
+        }
+    }
+
+    private void validateParticipantLimitFormat(Integer limit) {
+        if (limit < 0) {
+            log.warn("Лимит участников не может быть отрицательным");
+            throw new ValidationException("Лимит участников не может быть отрицательным");
         }
     }
 
@@ -506,6 +533,10 @@ public class EventService {
         if (updateEventUserDto.getTitle() != null) {
             validateTitleFormat(updateEventUserDto.getTitle());
         }
+
+        if (updateEventUserDto.getParticipantLimit() != null) {
+            validateParticipantLimitFormat(updateEventUserDto.getParticipantLimit());
+        }
     }
 
     private void validateUpdateAdminEventDto(UpdateEventAdminDto updateEventAdminDto) {
@@ -519,6 +550,10 @@ public class EventService {
 
         if (updateEventAdminDto.getTitle() != null) {
             validateTitleFormat(updateEventAdminDto.getTitle());
+        }
+
+        if (updateEventAdminDto.getParticipantLimit() != null) {
+            validateParticipantLimitFormat(updateEventAdminDto.getParticipantLimit());
         }
     }
 }
