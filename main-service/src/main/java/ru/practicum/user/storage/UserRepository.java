@@ -9,5 +9,6 @@ import java.util.Set;
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     Page<User> findAllByIdIn(Set<Integer> userId, Pageable pageable);
+
     User findByEmail(String email);
 }

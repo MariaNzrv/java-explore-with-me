@@ -13,16 +13,17 @@ import ru.practicum.category.storage.CategoryRepository;
 import ru.practicum.error.exception.ConflictValidationException;
 import ru.practicum.error.exception.EntityNotFoundException;
 import ru.practicum.error.exception.ValidationException;
-import ru.practicum.user.model.User;
+import ru.practicum.event.model.Event;
+import ru.practicum.event.storage.EventRepository;
 
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final EventRepository eventRepository;
 
     public Category create(NewCategoryDto newCategoryDto) {
         String name = newCategoryDto.getName();
@@ -36,6 +37,11 @@ public class CategoryService {
     public void delete(Integer catId) {
         validateCategoryId(catId);
         Category category = findCategoryById(catId);
+        List<Event> events = eventRepository.findAllByCategoryId(catId);
+        if (events != null && !events.isEmpty()) {
+            log.warn("Существуют события, связанные с категорией");
+            throw new ConflictValidationException("Существуют события, связанные с категорией");
+        }
         categoryRepository.delete(category);
     }
 
@@ -61,7 +67,7 @@ public class CategoryService {
     public List<Category> findAll(Integer from, Integer size) {
         Pageable page = getPageable(from, size);
 
-       return categoryRepository.findAll(page).getContent();
+        return categoryRepository.findAll(page).getContent();
     }
 
     private void validateFieldsFormat(String name, Integer catId) {

@@ -9,7 +9,6 @@ import ru.practicum.event.dto.UpdateEventUserDto;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
 import ru.practicum.location.model.Location;
-import ru.practicum.user.dto.UserDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 
@@ -90,12 +89,18 @@ public class EventMapper {
         event.setLocation(location);
         if (eventDto.getPaid() != null) {
             event.setPaid(eventDto.getPaid());
+        } else {
+            event.setPaid(Boolean.FALSE);
         }
         if (eventDto.getParticipantLimit() != null) {
             event.setParticipantLimit(eventDto.getParticipantLimit());
+        } else {
+            event.setParticipantLimit(0);
         }
         if (eventDto.getRequestModeration() != null) {
             event.setRequestModeration(eventDto.getRequestModeration());
+        } else {
+            event.setRequestModeration(Boolean.TRUE);
         }
         event.setTitle(eventDto.getTitle());
         event.setInitiator(user);
@@ -128,7 +133,7 @@ public class EventMapper {
     public static List<EventFullDto> toListOfEventFullDto(List<Event> events, HashMap<Integer, Integer> requestsMap, HashMap<Integer, Integer> viewsMap) {
         List<EventFullDto> eventFullDtos = new ArrayList<>();
 
-        for (Event event: events) {
+        for (Event event : events) {
             eventFullDtos.add(EventMapper.toDto(event, requestsMap.get(event.getId()), viewsMap.get(event.getId())));
         }
 
@@ -138,7 +143,7 @@ public class EventMapper {
     public static List<EventShortDto> toListOfEventShortDto(List<Event> events, HashMap<Integer, Integer> requestsMap, HashMap<Integer, Integer> viewsMap) {
         List<EventShortDto> eventShortDtos = new ArrayList<>();
 
-        for (Event event: events) {
+        for (Event event : events) {
             eventShortDtos.add(EventMapper.toShortDto(event, requestsMap.get(event.getId()), viewsMap.get(event.getId())));
         }
 

@@ -17,7 +17,10 @@ import ru.practicum.user.model.User;
 import ru.practicum.user.service.UserService;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -30,6 +33,7 @@ public class RequestService {
     public List<Request> getEventConfirmedRequests(Integer eventId) {
         return requestRepository.findAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED);
     }
+
     public List<Request> getPendingRequestsToChange(Set<Integer> ids) {
         return requestRepository.findAllByStatusAndIdIn(RequestStatus.PENDING, ids);
     }
@@ -40,7 +44,7 @@ public class RequestService {
 
     public HashMap<Integer, Integer> getListOfCountConfirmedRequests(List<Event> events) {
         Set<Integer> eventsIds = new HashSet<>();
-        for (Event event: events) {
+        for (Event event : events) {
             eventsIds.add(event.getId());
         }
 
@@ -76,7 +80,7 @@ public class RequestService {
             throw new ConflictValidationException("нельзя участвовать в неопубликованном событии");
         }
 
-        if (Objects.equals(event.getParticipantLimit(), getCountOfEventConfirmedRequests(eventId))) {
+        if (event.getParticipantLimit().equals(getCountOfEventConfirmedRequests(eventId)) && event.getParticipantLimit() != 0) {
             log.error(" у события достигнут лимит запросов на участие");
             throw new ConflictValidationException(" у события достигнут лимит запросов на участие");
         }
@@ -85,8 +89,8 @@ public class RequestService {
         request.setRequester(user);
         request.setCreated(LocalDateTime.now());
         request.setEvent(event);
-        if (!event.getRequestModeration()) {
-           request.setStatus(RequestStatus.CONFIRMED);
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            request.setStatus(RequestStatus.CONFIRMED);
         } else {
             request.setStatus(RequestStatus.PENDING);
         }
@@ -107,7 +111,7 @@ public class RequestService {
             throw new ConflictValidationException("нельзя отменить чужой запрос");
         }
 
-        request.setStatus(RequestStatus.REJECTED);
+        request.setStatus(RequestStatus.CANCELED);
 
         return requestRepository.save(request);
 

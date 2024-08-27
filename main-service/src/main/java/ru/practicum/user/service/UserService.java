@@ -2,14 +2,13 @@ package ru.practicum.user.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.category.model.Category;
 import ru.practicum.error.exception.ConflictValidationException;
-import ru.practicum.error.exception.ValidationException;
 import ru.practicum.error.exception.EntityNotFoundException;
+import ru.practicum.error.exception.ValidationException;
 import ru.practicum.user.dto.NewUserDto;
 import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
@@ -95,8 +94,15 @@ public class UserService {
             throw new ValidationException("Электронная почта указана неверно");
         }
 
-        if ((email.substring(email.indexOf('@'), email.lastIndexOf('.')).length() - 1) > 63) {
-            log.warn("Домен электронной почты указан неверно email: {} ; domain: {}", email, email.substring(email.indexOf('@'), email.indexOf('.')));
+        String substrEmail = email.substring(email.indexOf('@'), email.lastIndexOf('.'));
+        String domainDot = "";
+        if (substrEmail.indexOf('.') == -1) {
+            domainDot = substrEmail;
+        } else {
+            domainDot = substrEmail.substring(substrEmail.lastIndexOf('.'));
+        }
+        if ((domainDot.length() - 1) > 63) {
+            log.warn("Домен электронной почты указан неверно email: {} ; domain: {}", email, email.substring(email.indexOf('.')));
             throw new ValidationException("Домен электронной почты указан неверно");
         }
 

@@ -6,10 +6,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
-import ru.practicum.event.dto.UpdateEventAdminDto;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
-import ru.practicum.event.model.EventState;
 import ru.practicum.event.model.SortParams;
 import ru.practicum.event.service.EventService;
 import ru.practicum.stats.client.StatsClient;
@@ -17,7 +15,6 @@ import ru.practicum.stats.dto.HitRequestDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 

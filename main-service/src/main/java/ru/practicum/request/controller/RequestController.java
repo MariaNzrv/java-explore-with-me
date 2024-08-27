@@ -7,10 +7,6 @@ import ru.practicum.request.dto.RequestDto;
 import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.service.RequestService;
-import ru.practicum.user.dto.NewUserDto;
-import ru.practicum.user.dto.UserDto;
-import ru.practicum.user.mapper.UserMapper;
-import ru.practicum.user.model.User;
 
 import java.util.List;
 

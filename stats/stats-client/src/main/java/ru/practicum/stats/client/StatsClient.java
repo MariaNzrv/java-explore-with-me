@@ -13,10 +13,7 @@ import ru.practicum.stats.dto.StatsResponseDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -33,10 +30,12 @@ public class StatsClient {
 
     public List<StatsResponseDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, Boolean unique) {
         try {
+            StringJoiner joiner = new StringJoiner(",");
+            uris.forEach(joiner::add);
             HashMap<String, Object> map = new HashMap<>();
             map.put("start", start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             map.put("end", end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-            map.put("uris", uris);
+            map.put("uris", joiner.toString());
             map.put("unique", unique);
             ResponseEntity<StatsResponseDto[]> response = restTemplate.getForEntity(serverUrl + "/stats?start={start}&end={end}&uris={uris}&unique={unique}", StatsResponseDto[].class, map);
 

@@ -7,16 +7,15 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.practicum.request.dto.RequestDto;
-import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
-import ru.practicum.user.model.User;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 @Component
 @RequiredArgsConstructor
-public class CustomRequestRepositoryImpl implements CustomRequestRepository{
+public class CustomRequestRepositoryImpl implements CustomRequestRepository {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Override

@@ -18,13 +18,11 @@ import ru.practicum.event.dto.EventShortDto;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.service.EventService;
-import ru.practicum.user.model.User;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -42,9 +40,9 @@ public class CompilationService {
             compilations = compilationRepository.findAllByPinned(pinned, page);
         }
         List<CompilationDto> result = new ArrayList<>();
-        for (Compilation compilation: compilations) {
+        for (Compilation compilation : compilations) {
             List<Event> eventList = compilation.getEvents().stream().toList();
-            HashMap<Integer, Integer> views =  eventService.getViewsList(eventList);
+            HashMap<Integer, Integer> views = eventService.getViewsList(eventList);
             HashMap<Integer, Integer> requests = eventService.getConfirmedRequestsList(eventList);
             List<EventShortDto> eventShortDtos = EventMapper.toListOfEventShortDto(eventList, requests, views);
             result.add(CompilationMapper.toDto(compilation, eventShortDtos));
@@ -56,7 +54,7 @@ public class CompilationService {
     public CompilationDto findCompilationById(Integer compId) {
         Compilation compilation = findById(compId);
         List<Event> eventList = compilation.getEvents().stream().toList();
-        HashMap<Integer, Integer> views =  eventService.getViewsList(eventList);
+        HashMap<Integer, Integer> views = eventService.getViewsList(eventList);
         HashMap<Integer, Integer> requests = eventService.getConfirmedRequestsList(eventList);
         List<EventShortDto> eventShortDtos = EventMapper.toListOfEventShortDto(eventList, requests, views);
         return CompilationMapper.toDto(compilation, eventShortDtos);
@@ -133,6 +131,7 @@ public class CompilationService {
             throw new ValidationException("Некорректные значения параметров from/size");
         }
     }
+
     private void validation(String title) {
         if (title == null) {
             log.warn("Обязательные поля не заполнены");

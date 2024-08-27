@@ -2,9 +2,6 @@ package ru.practicum.event.storage;
 
 import ru.practicum.event.model.Event;
 import ru.practicum.event.model.EventState;
-import org.springframework.data.domain.Pageable;
-import ru.practicum.event.model.SortParams;
-
 
 import java.time.LocalDateTime;
 import java.util.List;

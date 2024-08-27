@@ -1,10 +1,8 @@
 package ru.practicum.request.mapper;
 
 import ru.practicum.event.model.Event;
-import ru.practicum.request.model.Request;
-import ru.practicum.user.dto.NewUserDto;
 import ru.practicum.request.dto.RequestDto;
-import ru.practicum.user.dto.UserShortDto;
+import ru.practicum.request.model.Request;
 import ru.practicum.user.model.User;
 
 import java.util.ArrayList;

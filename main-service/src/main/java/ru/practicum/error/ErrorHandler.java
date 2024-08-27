@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.error.exception.ConflictValidationException;
-import ru.practicum.error.exception.ValidationException;
 import ru.practicum.error.exception.EntityNotFoundException;
+import ru.practicum.error.exception.ValidationException;
 import ru.practicum.error.model.ErrorResponse;
 
 import java.time.LocalDateTime;

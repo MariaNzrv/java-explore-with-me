@@ -3,18 +3,17 @@ package ru.practicum.event.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
+import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.dto.UpdateEventUserDto;
 import ru.practicum.event.mapper.EventMapper;
-import ru.practicum.event.dto.EventFullDto;
-import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.model.Event;
 import ru.practicum.event.service.EventService;
 import ru.practicum.request.dto.RequestDto;
 import ru.practicum.request.dto.StatusUpdateRequestDto;
 import ru.practicum.request.dto.StatusUpdateResultDto;
 import ru.practicum.request.mapper.RequestMapper;
-import ru.practicum.request.service.RequestService;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,8 +34,8 @@ public class PrivateEventController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<EventShortDto> findAllEventsAddedByUser(@PathVariable Integer userId,
-                                       @RequestParam(defaultValue = "0", required = false, name = "from") Integer from,
-                                       @RequestParam(defaultValue = "10", required = false, name = "size") Integer size) {
+                                                        @RequestParam(defaultValue = "0", required = false, name = "from") Integer from,
+                                                        @RequestParam(defaultValue = "10", required = false, name = "size") Integer size) {
         List<Event> events = eventService.findAllEventsAddedByUser(userId, from, size);
         HashMap<Integer, Integer> viewsMap = eventService.getViewsList(events);
         HashMap<Integer, Integer> requestsMap = eventService.getConfirmedRequestsList(events);
@@ -67,7 +66,7 @@ public class PrivateEventController {
     @GetMapping("/{eventId}/requests")
     @ResponseStatus(HttpStatus.OK)
     public List<RequestDto> findAllRequestsOfUserEvent(@PathVariable Integer userId,
-                                                     @PathVariable Integer eventId) {
+                                                       @PathVariable Integer eventId) {
 
         return RequestMapper.toDto(eventService.findAllRequestsOfUserEvent(userId, eventId));
     }
@@ -80,7 +79,6 @@ public class PrivateEventController {
 
         return eventService.changeRequestsStatus(userId, eventId, statusUpdateRequestDto);
     }
-
 
 
 }

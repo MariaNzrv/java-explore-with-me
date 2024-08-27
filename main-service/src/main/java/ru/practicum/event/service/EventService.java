@@ -5,9 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.service.CategoryService;
 import ru.practicum.error.exception.ConflictValidationException;
@@ -16,21 +14,18 @@ import ru.practicum.error.exception.ValidationException;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.*;
+import ru.practicum.event.storage.EventRepository;
+import ru.practicum.location.model.Location;
 import ru.practicum.location.service.LocationService;
-import ru.practicum.request.dto.RequestDto;
 import ru.practicum.request.dto.StatusUpdateRequestDto;
 import ru.practicum.request.dto.StatusUpdateResultDto;
 import ru.practicum.request.mapper.RequestMapper;
 import ru.practicum.request.model.Request;
 import ru.practicum.request.model.RequestStatus;
-import ru.practicum.request.service.RequestService;
 import ru.practicum.request.storage.RequestRepository;
 import ru.practicum.stats.client.StatsClient;
-import ru.practicum.stats.dto.HitRequestDto;
 import ru.practicum.stats.dto.StatsResponseDto;
 import ru.practicum.user.model.User;
-import ru.practicum.event.storage.EventRepository;
-import ru.practicum.location.model.Location;
 import ru.practicum.user.service.UserService;
 
 import java.time.LocalDateTime;
@@ -48,13 +43,20 @@ public class EventService {
     private final RequestRepository requestRepository;
     private final StatsClient statsClient;
 
+    private static void validateRange(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        if (rangeEnd != null && rangeStart != null && rangeEnd.isBefore(rangeStart)) {
+            log.warn("Неверно указан диапазон дат");
+            throw new ValidationException("Неверно указан диапазон дат");
+        }
+    }
+
     public Event create(NewEventDto newEventDto, Integer userId) {
-        
+
         validateNewEventDto(newEventDto);
 
         Category category = categoryService.findCategoryById(newEventDto.getCategory());
 
-        Location location  = locationService.findLocationById(newEventDto.getLocation());
+        Location location = locationService.findLocationById(newEventDto.getLocation());
 
         User user = userService.findUserById(userId);
 
@@ -87,7 +89,7 @@ public class EventService {
         Event event = findEventById(eventId);
         EventState state = event.getState();
         User user = userService.findUserById(userId);
-        if(!event.getInitiator().equals(user)) {
+        if (!event.getInitiator().equals(user)) {
             log.warn("Событие недоступно для редактирования");
             throw new EntityNotFoundException("Событие недоступно для редактирования");
         }
@@ -114,7 +116,7 @@ public class EventService {
         }
 
         if (updateEventUserDto.getLocation() != null) {
-            Location location  = locationService.findLocationById(updateEventUserDto.getLocation());
+            Location location = locationService.findLocationById(updateEventUserDto.getLocation());
             event.setLocation(location);
         }
 
@@ -153,14 +155,14 @@ public class EventService {
         });
     }
 
-    public Integer getConfirmedRequests (Integer eventId) {
+    public Integer getConfirmedRequests(Integer eventId) {
         return requestRepository.findAllByEventIdAndStatus(eventId, RequestStatus.CONFIRMED).size();
     }
 
-    public Integer getViews (Event event) {
+    public Integer getViews(Event event) {
         List<String> uris = new ArrayList<>();
-        uris.add("http://localhost:8080/events/" + event.getId());
-        List<StatsResponseDto> stats = statsClient.getStats(event.getCreated(), LocalDateTime.now(), uris, false);
+        uris.add("/events/" + event.getId());
+        List<StatsResponseDto> stats = statsClient.getStats(event.getCreated(), LocalDateTime.now(), uris, true);
         if (stats != null && !stats.isEmpty()) {
             return stats.get(0).getHits();
         } else {
@@ -172,24 +174,26 @@ public class EventService {
         HashMap<Integer, Integer> viewsMap = new HashMap<>();
         List<String> uris = new ArrayList<>();
         LocalDateTime start = LocalDateTime.now();
-        for (Event event: events) {
-            uris.add("http://localhost:8080/events/" + event.getId());
+        for (Event event : events) {
+            uris.add("/events/" + event.getId());
             if (event.getCreated().isBefore(start)) {
                 start = event.getCreated();
             }
         }
         List<StatsResponseDto> stats = statsClient.getStats(start, LocalDateTime.now(), uris, false);
-        for (StatsResponseDto statsResponseDto: stats) {
+        for (StatsResponseDto statsResponseDto : stats) {
             String uri = statsResponseDto.getUri();
-            Integer eventId = Integer.valueOf(uri.substring(uri.lastIndexOf('/')));
-            viewsMap.put(eventId, statsResponseDto.getHits());
+            if (!uri.equals("/events")) {
+                Integer eventId = Integer.valueOf(uri.substring(uri.lastIndexOf('/') + 1));
+                viewsMap.put(eventId, statsResponseDto.getHits());
+            }
         }
 
         return viewsMap;
     }
 
     public HashMap<Integer, Integer> getConfirmedRequestsList(List<Event> events) {
-       return requestRepository.getCountOfEventsRequestsMap(events.stream().map(Event::getId).collect(Collectors.toSet()));
+        return requestRepository.getCountOfEventsRequestsMap(events.stream().map(Event::getId).collect(Collectors.toSet()));
     }
 
     public List<Request> findAllRequestsOfUserEvent(Integer userId, Integer eventId) {
@@ -199,7 +203,7 @@ public class EventService {
         }
         userService.findUserById(userId);
         Event event = findEventById(eventId);
-        if (!event.getInitiator().getId().equals(userId)){
+        if (!event.getInitiator().getId().equals(userId)) {
             log.error("Пользователь не являяется инициатором события");
             throw new ConflictValidationException("Пользователь не являяется инициатором события");
         }
@@ -214,7 +218,7 @@ public class EventService {
         }
         userService.findUserById(userId);
         Event event = findEventById(eventId);
-        if (!event.getInitiator().getId().equals(userId)){
+        if (!event.getInitiator().getId().equals(userId)) {
             log.error("Пользователь не являяется инициатором события");
             throw new ConflictValidationException("Пользователь не являяется инициатором события");
         }
@@ -225,7 +229,7 @@ public class EventService {
         }
 
         Integer countOfConfirmedRequests = getConfirmedRequests(eventId);
-        if (countOfConfirmedRequests.equals(event.getParticipantLimit())) {
+        if (countOfConfirmedRequests.equals(event.getParticipantLimit()) && event.getParticipantLimit() != 0) {
             log.warn("достигнут лимит по заявкам на данное событие");
             throw new ConflictValidationException("достигнут лимит по заявкам на данное событие");
         }
@@ -247,21 +251,21 @@ public class EventService {
         StatusUpdateResultDto result = null;
 
         if (statusUpdateRequestDto.getStatus().equals(RequestStatus.CONFIRMED)) {
-                for (Request request: requests) {
-                    if (countOfConfirmedRequests <= event.getParticipantLimit()) {
-                        request.setStatus(RequestStatus.CONFIRMED);
-                        confirmedRequests.add(request);
-                        countOfConfirmedRequests++;
-                    } else {
-                        request.setStatus(RequestStatus.REJECTED);
-                        rejectedRequests.add(request);
-                    }
-                    List<Request> savedConfirmedRequests = requestRepository.saveAll(confirmedRequests);
-                    List<Request> savedRejectedRequests = requestRepository.saveAll(rejectedRequests);
-                    result = new StatusUpdateResultDto(RequestMapper.toDto(savedConfirmedRequests), RequestMapper.toDto(savedRejectedRequests));
+            for (Request request : requests) {
+                if (countOfConfirmedRequests <= event.getParticipantLimit()) {
+                    request.setStatus(RequestStatus.CONFIRMED);
+                    confirmedRequests.add(request);
+                    countOfConfirmedRequests++;
+                } else {
+                    request.setStatus(RequestStatus.REJECTED);
+                    rejectedRequests.add(request);
                 }
+                List<Request> savedConfirmedRequests = requestRepository.saveAll(confirmedRequests);
+                List<Request> savedRejectedRequests = requestRepository.saveAll(rejectedRequests);
+                result = new StatusUpdateResultDto(RequestMapper.toDto(savedConfirmedRequests), RequestMapper.toDto(savedRejectedRequests));
+            }
         } else {
-            for (Request request:requests) {
+            for (Request request : requests) {
                 request.setStatus(RequestStatus.REJECTED);
             }
             List<Request> savedRequests = requestRepository.saveAll(requests);
@@ -279,6 +283,7 @@ public class EventService {
                                              Integer from,
                                              Integer size) {
         validate(from, size);
+        validateRange(rangeStart, rangeEnd);
         if (users == null && states == null && categories == null && rangeStart == null && rangeEnd == null) {
             Pageable page = getPageable(from, size);
             return eventRepository.findAll(page).getContent();
@@ -287,15 +292,19 @@ public class EventService {
     }
 
     public List<EventShortDto> findAllPublishedEventsByParams(String text,
-                                                      Set<Integer> categories,
-                                                      Boolean paid,
-                                                      LocalDateTime rangeStart,
-                                                      LocalDateTime rangeEnd,
-                                                      Boolean onlyAvailable,
-                                                      SortParams sort,
-                                                      Integer from,
-                                                      Integer size) {
+                                                              Set<Integer> categories,
+                                                              Boolean paid,
+                                                              LocalDateTime rangeStart,
+                                                              LocalDateTime rangeEnd,
+                                                              Boolean onlyAvailable,
+                                                              SortParams sort,
+                                                              Integer from,
+                                                              Integer size) {
         validate(from, size);
+        validateRange(rangeStart, rangeEnd);
+
+        log.warn("text = " + text);
+        log.warn("categories = " + categories);
         if (text == null && categories == null && paid == null && rangeStart == null && rangeEnd == null && onlyAvailable == null && sort == null) {
             Pageable page = getPageable(from, size);
             List<Event> events = eventRepository.findAllByState(EventState.PUBLISHED, page);
@@ -317,47 +326,41 @@ public class EventService {
                     resultFull.add(eventFullDto);
                 }
             }
+        } else {
+            resultFull = new ArrayList<>(allShortEvents);
         }
 
         if (sort != null) {
             if (sort.equals(SortParams.EVENT_DATE)) {
-                resultFull.sort(new Comparator<EventFullDto>() {
-                    @Override
-                    public int compare(EventFullDto e1, EventFullDto e2) {
-                        return e1.getEventDate().compareTo(e2.getEventDate());
-                    }
-                });
+                resultFull.sort(Comparator.comparing(EventFullDto::getEventDate));
             }
 
             if (sort.equals(SortParams.VIEWS)) {
-                resultFull.sort(new Comparator<EventFullDto>() {
-                    @Override
-                    public int compare(EventFullDto e1, EventFullDto e2) {
-                        return Integer.compare(e1.getViews(), e2.getViews());
-                    }
-                });
+                resultFull.sort(Comparator.comparingInt(EventFullDto::getViews));
             }
         }
 
         if (resultFull.isEmpty()) {
             return new ArrayList<>();
         }
-        return EventMapper.toShortFromFullEvent(resultFull.subList(from, from + size - 1));
+        return EventMapper.toShortFromFullEvent(resultFull.stream().skip(from).limit(size).collect(Collectors.toList()));
     }
 
     public Event changeEventsByAdmin(Integer eventId, UpdateEventAdminDto updateEventAdminDto) {
         Event event = findEventById(eventId);
-        if (event.getEventDate().isAfter(LocalDateTime.now().plusHours(1))) {
+        if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             log.warn("дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
             throw new ConflictValidationException("дата начала изменяемого события должна быть не ранее чем за час от даты публикации");
         }
-        if (updateEventAdminDto.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) && !event.getState().equals(EventState.PENDING)) {
-            log.warn("событие можно публиковать, только если оно в состоянии ожидания публикации");
-            throw new ConflictValidationException("событие можно публиковать, только если оно в состоянии ожидания публикации");
-        }
-        if (updateEventAdminDto.getStateAction().equals(StateActionAdmin.REJECT_EVENT) && !event.getState().equals(EventState.PENDING)) {
-            log.warn("событие можно отклонить, только если оно еще не опубликовано");
-            throw new ConflictValidationException("событие можно отклонить, только если оно еще не опубликовано");
+        if (updateEventAdminDto.getStateAction() != null) {
+            if (updateEventAdminDto.getStateAction().equals(StateActionAdmin.PUBLISH_EVENT) && !event.getState().equals(EventState.PENDING)) {
+                log.warn("событие можно публиковать, только если оно в состоянии ожидания публикации");
+                throw new ConflictValidationException("событие можно публиковать, только если оно в состоянии ожидания публикации");
+            }
+            if (updateEventAdminDto.getStateAction().equals(StateActionAdmin.REJECT_EVENT) && !event.getState().equals(EventState.PENDING)) {
+                log.warn("событие можно отклонить, только если оно еще не опубликовано");
+                throw new ConflictValidationException("событие можно отклонить, только если оно еще не опубликовано");
+            }
         }
 
         validateUpdateAdminEventDto(updateEventAdminDto);
@@ -380,7 +383,7 @@ public class EventService {
         }
 
         if (updateEventAdminDto.getLocation() != null) {
-            Location location  = locationService.findLocationById(updateEventAdminDto.getLocation());
+            Location location = locationService.findLocationById(updateEventAdminDto.getLocation());
             event.setLocation(location);
         }
 
@@ -422,7 +425,7 @@ public class EventService {
     }
 
     private void validateNewEventDto(NewEventDto newEventDto) {
-        
+
         if (newEventDto.getAnnotation() == null ||
                 newEventDto.getCategory() == null ||
                 newEventDto.getDescription() == null ||
@@ -445,51 +448,51 @@ public class EventService {
     }
 
     private void validateEventDateFormat(LocalDateTime eventDate) {
-        if (eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
+        if (eventDate != null && eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             log.warn("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
             throw new ValidationException("Дата и время на которые намечено событие не может быть раньше, чем через два часа от текущего момента");
         }
     }
 
     private void validateParticipantLimitFormat(Integer limit) {
-        if (limit < 0) {
+        if (limit != null && limit < 0) {
             log.warn("Лимит участников не может быть отрицательным");
             throw new ValidationException("Лимит участников не может быть отрицательным");
         }
     }
 
     private void validateTitleFormat(String title) {
-        if (title.isBlank()) {
+        if (title != null && title.isBlank()) {
             log.warn("Заголовок не может состоять из пробелов");
             throw new ValidationException("Заголовок не может состоять из пробелов");
         }
 
-        if (title.length() > 120 || title.length() < 3) {
-                log.warn("Размерность поля заголовок должна быть в интервале [3,120]");
-                throw new ValidationException("Размерность поля заголовок должна быть в интервале [3,120]");
+        if (title != null && (title.length() > 120 || title.length() < 3)) {
+            log.warn("Размерность поля заголовок должна быть в интервале [3,120]");
+            throw new ValidationException("Размерность поля заголовок должна быть в интервале [3,120]");
         }
     }
 
 
     private void validateDescriptionFormat(String description) {
-        if (description.isBlank()) {
+        if (description != null && description.isBlank()) {
             log.warn("Описание не может состоять из пробелов");
             throw new ValidationException("Описание не может состоять из пробелов");
         }
 
-        if (description.length() > 7000 || description.length() < 20) {
+        if (description != null && (description.length() > 7000 || description.length() < 20)) {
             log.warn("Размерность поля описание должна быть в интервале [20,7000]");
             throw new ValidationException("Размерность поля описание должна быть в интервале [20,7000]");
         }
     }
 
     private void validateAnnotationFormat(String annotation) {
-        if (annotation.isBlank()) {
+        if (annotation != null && annotation.isBlank()) {
             log.warn("Аннотация не может состоять из пробелов");
             throw new ValidationException("Аннотация не может состоять из пробелов");
         }
 
-        if (annotation.length() > 2000 || annotation.length() < 20) {
+        if (annotation != null && (annotation.length() > 2000 || annotation.length() < 20)) {
             log.warn("Размерность поля аннотация должна быть в интервале [20,2000]");
             throw new ValidationException("Размерность поля аннотация должна быть в интервале [20,2000]");
         }
@@ -503,14 +506,14 @@ public class EventService {
     }
 
     private void validate(Integer from, Integer size) {
-        if (from < 0 || size <= 0) {
+        if (from != null && from < 0 || size != null && size <= 0) {
             log.error("Некорректные значения параметров from = {}, size={}", from, size);
             throw new ValidationException("Некорректные значения параметров from/size");
         }
     }
 
     private void validateEventStateForUpdate(EventState state) {
-        if (!state.equals(EventState.CANCELED) && !state.equals(EventState.PENDING)) {
+        if (state != null && !state.equals(EventState.CANCELED) && !state.equals(EventState.PENDING)) {
             log.error("Событие не удовлетворяет правилам редактирования");
             throw new ConflictValidationException("Событие не удовлетворяет правилам редактирования");
         }
@@ -554,6 +557,10 @@ public class EventService {
 
         if (updateEventAdminDto.getParticipantLimit() != null) {
             validateParticipantLimitFormat(updateEventAdminDto.getParticipantLimit());
+        }
+
+        if (updateEventAdminDto.getEventDate() != null) {
+            validateEventDateFormat(updateEventAdminDto.getEventDate());
         }
     }
 }

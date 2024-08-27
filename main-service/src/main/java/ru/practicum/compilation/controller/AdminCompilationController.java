@@ -3,15 +3,9 @@ package ru.practicum.compilation.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.category.dto.CategoryDto;
-import ru.practicum.category.dto.NewCategoryDto;
-import ru.practicum.category.mapper.CategoryMapper;
-import ru.practicum.category.model.Category;
 import ru.practicum.compilation.dto.CompilationDto;
 import ru.practicum.compilation.dto.NewCompilationDto;
 import ru.practicum.compilation.dto.UpdateCompilationDto;
-import ru.practicum.compilation.mapper.CompilationMapper;
-import ru.practicum.compilation.model.Compilation;
 import ru.practicum.compilation.service.CompilationService;
 
 @RestController

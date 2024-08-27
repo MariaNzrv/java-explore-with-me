@@ -13,8 +13,6 @@ services:
     image: postgres:16.1
     environment:
       POSTGRES_PASSWORD: password
-#    ports:
-#      - "5432:5432"
 
 
   ewm-service:

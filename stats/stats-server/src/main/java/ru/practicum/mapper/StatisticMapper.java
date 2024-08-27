@@ -1,9 +1,9 @@
 package ru.practicum.mapper;
 
-import ru.practicum.stats.dto.HitRequestDto;
-import ru.practicum.stats.dto.StatsResponseDto;
 import ru.practicum.model.EndpointHistory;
 import ru.practicum.model.Statistic;
+import ru.practicum.stats.dto.HitRequestDto;
+import ru.practicum.stats.dto.StatsResponseDto;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

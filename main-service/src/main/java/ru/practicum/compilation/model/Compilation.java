@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import ru.practicum.event.model.Event;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Data
@@ -28,7 +26,7 @@ public class Compilation {
 
     @ManyToMany
     @JoinTable(name = "compilation_event",
-            joinColumns = { @JoinColumn(name = "compilation_id") },
-            inverseJoinColumns = { @JoinColumn(name = "event_id") })
+            joinColumns = {@JoinColumn(name = "compilation_id")},
+            inverseJoinColumns = {@JoinColumn(name = "event_id")})
     private Set<Event> events = new HashSet<>();
 }
