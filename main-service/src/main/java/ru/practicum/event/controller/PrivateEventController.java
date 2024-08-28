@@ -44,7 +44,7 @@ public class PrivateEventController {
 
     @GetMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto findAllEventsAddedByUser(@PathVariable Integer userId,
+    public EventFullDto findEventAddedByUser(@PathVariable Integer userId,
                                                  @PathVariable Integer eventId) {
         Event event = eventService.findUserEventById(eventId, userId);
         Integer confirmedRequests = eventService.getConfirmedRequests(eventId);
@@ -54,7 +54,7 @@ public class PrivateEventController {
 
     @PatchMapping("/{eventId}")
     @ResponseStatus(HttpStatus.OK)
-    public EventFullDto findAllEventsAddedByUser(@PathVariable Integer userId,
+    public EventFullDto updateEventByUser(@PathVariable Integer userId,
                                                  @PathVariable Integer eventId,
                                                  @RequestBody UpdateEventUserDto updateEventUserDto) {
         Event savedEvent = eventService.updateEventByUser(userId, eventId, updateEventUserDto);
