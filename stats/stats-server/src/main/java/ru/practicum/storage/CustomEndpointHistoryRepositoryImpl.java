@@ -32,7 +32,7 @@ public class CustomEndpointHistoryRepositoryImpl implements CustomEndpointHistor
         SqlParameterSource parameters = new MapSqlParameterSource(params);
         String sql = "select distinct app_id, uri, count(id) as hits "
                 + "from endpoint_hist "
-                + "where request_timestamp between date(:start) and date(:end) "
+                + "where request_timestamp between (:start) and (:end) "
                 + "group by app_id, uri "
                 + "order by hits desc";
         SqlRowSet endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
@@ -51,7 +51,7 @@ public class CustomEndpointHistoryRepositoryImpl implements CustomEndpointHistor
         SqlParameterSource parameters = new MapSqlParameterSource(params);
         String sql = "select distinct app_id, uri, count(id) as hits "
                 + "from endpoint_hist "
-                + "where request_timestamp between date(:start) and date(:end) and uri in (:uri) "
+                + "where request_timestamp between (:start) and (:end) and uri in (:uri) "
                 + "group by app_id, uri "
                 + "order by hits desc";
         SqlRowSet endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
@@ -70,7 +70,7 @@ public class CustomEndpointHistoryRepositoryImpl implements CustomEndpointHistor
         String sql = "select app_id, uri, count(uri) as hits from ( "
                 + "select distinct app_id, uri, ip "
                 + "from endpoint_hist "
-                + "where request_timestamp between date(:start) and date(:end)) "
+                + "where request_timestamp between (:start) and (:end)) "
                 + "group by app_id, uri "
                 + "order by hits desc";
         SqlRowSet endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
@@ -90,7 +90,7 @@ public class CustomEndpointHistoryRepositoryImpl implements CustomEndpointHistor
         String sql = "select app_id, uri, count(uri) as hits from ( "
                 + "select distinct app_id, uri, ip "
                 + "from endpoint_hist "
-                + "where request_timestamp between date(:start) and date(:end) and uri in (:uri)) "
+                + "where request_timestamp between (:start) and (:end) and uri in (:uri)) "
                 + "group by app_id, uri "
                 + "order by hits desc";
         SqlRowSet endpointHistRows = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);

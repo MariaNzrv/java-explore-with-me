@@ -13,8 +13,6 @@ services:
     image: postgres:16.1
     environment:
       POSTGRES_PASSWORD: password
-#    ports:
-#      - "5432:5432"
 
 
   ewm-service:
@@ -26,6 +24,7 @@ services:
       - ewm-db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://ewm-db:5432/postgres
+      - STAT_SERVER_URL=http://stats-server:9090
 
   ewm-db:
     image: postgres:16.1
