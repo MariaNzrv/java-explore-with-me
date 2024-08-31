@@ -33,6 +33,8 @@ public class CommentMapper {
 
     public static CommentDto toDtoForEvent(Comment comment) {
         CommentDto commentDto = new CommentDto();
+        commentDto.setId(comment.getId());
+        commentDto.setEventId(comment.getEvent().getId());
         commentDto.setText(comment.getText());
         commentDto.setAuthorName(comment.getAuthor().getName());
         commentDto.setCreated(comment.getCreated());

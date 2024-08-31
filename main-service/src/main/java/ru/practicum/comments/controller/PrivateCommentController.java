@@ -1,5 +1,6 @@
 package ru.practicum.comments.controller;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,16 @@ public class PrivateCommentController {
     private final CommentService commentService;
 
     @GetMapping
-    public List<CommentDto> findAllCommentsOfUser(@PathVariable @NonNull @Min(1) Integer userId) {
-        return CommentMapper.toDto(commentService.findAllCommentsOfUser(userId));
+    public List<CommentDto> findAllCommentsOfUser(
+            @PathVariable @NonNull @Min(1) Integer userId,
+            @RequestParam(required = false, defaultValue = "0") Integer from,
+            @RequestParam(required = false, defaultValue = "10") Integer size) {
+        return CommentMapper.toDto(commentService.findAllCommentsOfUser(userId, from, size));
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto createComment(@PathVariable @NonNull @Min(1) Integer userId, @RequestParam @NonNull @Min(1) Integer eventId, @RequestBody CommentDto commentDto) {
+    public CommentDto createComment(@PathVariable @NonNull @Min(1) Integer userId, @RequestParam @NonNull @Min(1) Integer eventId, @Valid @RequestBody CommentDto commentDto) {
         Comment savedComment = commentService.createComment(userId, eventId, commentDto);
         return CommentMapper.toDto(savedComment);
     }
