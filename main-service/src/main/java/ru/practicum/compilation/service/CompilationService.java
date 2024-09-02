@@ -69,7 +69,7 @@ public class CompilationService {
 
     public CompilationDto create(NewCompilationDto newCompilationDto) {
         String title = newCompilationDto.getTitle();
-        validation(title);
+        validateTitle(title);
         Compilation compilation = CompilationMapper.toEntity(newCompilationDto);
         HashMap<Integer, Integer> views = new HashMap<>();
         HashMap<Integer, Integer> requests = new HashMap<>();
@@ -98,7 +98,7 @@ public class CompilationService {
         List<EventShortDto> eventShortDtos = new ArrayList<>();
 
         if (updateCompilationDto.getTitle() != null) {
-            validation(updateCompilationDto.getTitle());
+            validateTitle(updateCompilationDto.getTitle());
             compilation.setTitle(updateCompilationDto.getTitle());
         }
 
@@ -119,20 +119,20 @@ public class CompilationService {
     }
 
     private Pageable getPageable(Integer from, Integer size) {
-        validate(from, size);
+        validateFromSize(from, size);
 
         Sort sortBy = Sort.by(Sort.Direction.ASC, "id");
         return PageRequest.of(from / size, size, sortBy);
     }
 
-    private void validate(Integer from, Integer size) {
+    private void validateFromSize(Integer from, Integer size) {
         if (from < 0 || size <= 0) {
             log.error("Некорректные значения параметров from = {}, size={}", from, size);
             throw new ValidationException("Некорректные значения параметров from/size");
         }
     }
 
-    private void validation(String title) {
+    private void validateTitle(String title) {
         if (title == null) {
             log.warn("Обязательные поля не заполнены");
             throw new ValidationException("Обязательные поля не заполнены");
